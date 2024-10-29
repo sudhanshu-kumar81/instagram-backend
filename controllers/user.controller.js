@@ -151,7 +151,13 @@ export const editProfile = async (req, res) => {
 };
 export const getSuggestedUsers = async (req, res) => {
     try {
-        const suggestedUsers = await User.find({ _id: { $ne: req.id } }).select("-password");
+        const originalUser = await User.findById(req.id);
+        const removeId=originalUser.following;
+        removeId.push(req.id);
+        const suggestedUsers = await User.find({
+            _id: { $nin: removeId } // Use $nin to exclude multiple IDs
+          }).select("-password");
+          console.log(suggestedUsers);
         if (!suggestedUsers) {
             return res.status(400).json({
                 message: 'Currently do not have any users',
