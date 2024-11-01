@@ -48,7 +48,7 @@ export const addNewPost = async (req, res) => {
 export const getAllPost = async (req, res) => {
     try {
         const posts = await Post.find().sort({ createdAt: -1 })
-            .populate({ path: 'author', select: 'username profilePicture' })
+            .populate({ path: 'author', select: 'username profilePicture followers following' })
             .populate({
                 path: 'comments',
                 sort: { createdAt: -1 },
@@ -247,13 +247,13 @@ export const bookmarkPost = async (req,res) => {
             // already bookmarked -> remove from the bookmark
             await user.updateOne({$pull:{bookmarks:post._id}});
             await user.save();
-            return res.status(200).json({type:'unsaved', message:'Post removed from bookmark', success:true});
+            return res.status(200).json({type:'unsaved', message:'Post removed from bookmark', success:true,bookMark:user.bookmarks});
 
         }else{
             // bookmark krna pdega
             await user.updateOne({$addToSet:{bookmarks:post._id}});
             await user.save();
-            return res.status(200).json({type:'saved', message:'Post bookmarked', success:true});
+            return res.status(200).json({type:'saved', message:'Post bookmarked', success:true,bookMark:user.bookmarks});
         }
 
     } catch (error) {

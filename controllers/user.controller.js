@@ -76,10 +76,12 @@ export const login = async (req, res) => {
             username: user.username,
             email: user.email,
             profilePicture: user.profilePicture,
+            bookmarks:user.bookmarks,
             bio: user.bio,
             followers: user.followers,
             following: user.following,
-            posts: populatedPosts
+            posts: populatedPosts,
+            
         }
         return res.cookie('token', token, { httpOnly: true, sameSite: 'strict', maxAge: 1 * 24 * 60 * 60 * 1000 }).json({
             message: `Welcome back ${user.username}`,
@@ -138,13 +140,34 @@ export const editProfile = async (req, res) => {
         if (profilePicture) user.profilePicture = cloudResponse.secure_url;
 
         await user.save();
-
+        console.log(user);
         return res.status(200).json({
             message: 'Profile updated.',
             success: true,
             user
         });
 
+    } catch (error) {
+        console.log(error);
+    }
+};
+export const getFollowingUser=async (req, res) => {
+    try {
+        console.log("backend in getFollowing User");
+        const originalUser = await User.findById(req.id);
+        const allFollowingId=originalUser.following;
+        console.log(allFollowingId);
+        const allFollowingUser=await User.find({_id:{$in:allFollowingId}}).select("-password");
+        console.log("allFollowingUser",allFollowingUser)
+        if (!allFollowingUser) {
+            return res.status(400).json({
+                message: 'you donot follow any one',
+            })
+        };
+        return res.status(200).json({
+            success: true,
+            users: allFollowingUser
+        })
     } catch (error) {
         console.log(error);
     }
