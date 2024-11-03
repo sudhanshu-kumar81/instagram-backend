@@ -83,6 +83,7 @@ export const login = async (req, res) => {
             posts: populatedPosts,
             
         }
+        console.log("user is ",user);
         return res.cookie('token', token, { httpOnly: true, sameSite: 'strict', maxAge: 1 * 24 * 60 * 60 * 1000 }).json({
             message: `Welcome back ${user.username}`,
             success: true,
@@ -106,7 +107,7 @@ export const logout = async (_, res) => {
 export const getProfile = async (req, res) => {
     try {
         const userId = req.params.id;
-        let user = await User.findById(userId).populate({path:'posts', createdAt:-1}).populate('bookmarks');
+        let user = await User.findById(userId).populate({path:'posts', createdAt:-1}).populate('bookmarks').populate('followers').populate('following');
         return res.status(200).json({
             user,
             success: true
@@ -167,6 +168,20 @@ export const getFollowingUser=async (req, res) => {
         return res.status(200).json({
             success: true,
             users: allFollowingUser
+        })
+    } catch (error) {
+        console.log(error);
+    }
+};
+export const getAllAvailableUser = async (req, res) => {
+    try {
+        
+        const users = await User.find({
+          }).select("-password");
+          console.log(users);
+        return res.status(200).json({
+            success: true,
+            users: users
         })
     } catch (error) {
         console.log(error);
